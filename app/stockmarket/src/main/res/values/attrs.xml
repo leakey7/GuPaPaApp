@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <declare-styleable name="StockTimeChart">
+        <attr name="TimeChartTimeColor" format="color" />
+        <attr name="TimeChartTimeSize" format="dimension" />
+        <attr name="TimeChartGridLineColor" format="color" />
+        <attr name="TimeChartDottedLineColor" format="color" />
+        <attr name="TimeChartIndicatorBgColor" format="color" />
+        <attr name="TimeChartPrePriceColor" format="color" />
+        <attr name="TimeChartAvePriceColor" format="color" />
+        <attr name="TimeChartRealPriceColor" format="color" />
+        <attr name="TimeChartUpColor" format="color" />
+        <attr name="TimeChartDownColor" format="color" />
+        <attr name="TimeChartItemSize" format="integer" />
+        <attr name="TimeChartUpTextSize" format="dimension" />
+        <attr name="TimeChartDownTextSize" format="dimension" />
+        
+    </declare-styleable>
+    
+</resources>

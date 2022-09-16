@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="White">#FFFFFF</color>
+    <color name="TimeColor">#50616D</color>
+    <color name="GridColor">#758A99</color>
+    <color name="DottedColor">#333333</color>
+    <color name="IndicatorColor">#808080</color>
+    <color name="AvePriceColor">#FFC773</color>
+    <color name="RealPriceColor">#392F41</color>
+    <color name="PrePriceColor">#A1AFC9</color>
+    <color name="UpColor">#C83C23</color>
+    <color name="DownColor">#0C8918</color>
+</resources>
