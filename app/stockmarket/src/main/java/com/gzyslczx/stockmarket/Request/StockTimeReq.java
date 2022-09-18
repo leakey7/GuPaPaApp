@@ -3,10 +3,10 @@ package com.gzyslczx.stockmarket.Request;
 public class StockTimeReq {
 
     private String stockCode;
-    private int date;
+    private int mlDate;
 
     public StockTimeReq(String stockCode, int date) {
         this.stockCode = stockCode;
-        this.date = date;
+        this.mlDate = date;
     }
 }

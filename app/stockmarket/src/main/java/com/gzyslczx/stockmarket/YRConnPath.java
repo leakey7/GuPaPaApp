@@ -7,6 +7,7 @@ public class YRConnPath {
     public final static String Origin = "Origin";
     public final static String TokenPath = "touxing/token";
     public final static String StockTimePath = "h5srvapi/trend";
+    public final static String OriginValue = "http://quote.youruitech.com";
 
 
 }

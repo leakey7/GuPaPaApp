@@ -33,7 +33,9 @@ public class SpTool {
         if (spTool!=null) {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString(k, v);
-            return editor.commit();
+            boolean result = editor.commit();
+            PrintTool.PrintLogD(TAG, String.format("存储%s——%b", k, result));
+            return result;
         }
         PrintTool.PrintLogD(TAG, "SpTool Not Init");
         return false;

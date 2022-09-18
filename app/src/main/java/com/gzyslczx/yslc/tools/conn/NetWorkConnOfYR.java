@@ -7,11 +7,17 @@ import com.gzyslczx.stockmarket.Response.StockTimeRes;
 import com.gzyslczx.stockmarket.Response.TokenRes;
 import com.gzyslczx.stockmarket.YRConnPath;
 import com.gzyslczx.yslc.BaseActivity;
+import com.gzyslczx.yslc.events.yourui.YRTokenUpdateEvent;
 import com.gzyslczx.yslc.fragment.BaseFragment;
 import com.gzyslczx.yslc.tools.DateTool;
 import com.gzyslczx.yslc.tools.PrintTool;
 import com.gzyslczx.yslc.tools.SpTool;
 import com.yourui.sdk.message.entity.RequestSrvSync;
+
+import org.greenrobot.eventbus.EventBus;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Consumer;
@@ -47,7 +53,7 @@ public class NetWorkConnOfYR {
     //请求Token
     public void RequestStockToken(BaseActivity baseActivity, BaseFragment baseFragment){
         PrintTool.PrintLogD(getClass().getSimpleName(), "请求友睿Token");
-        Observable<TokenRes> observable =  mode.RequestToken(YRConnPath.Origin, new TokenReq());
+        Observable<TokenRes> observable =  mode.RequestToken(YRConnPath.MainPath, new TokenReq());
         observable = ConnTool.AddRetryReq(observable, getClass().getSimpleName());
         if (baseActivity!=null){
             observable = ConnTool.AddExtraReqOfAct(observable, baseActivity);
@@ -61,6 +67,7 @@ public class NetWorkConnOfYR {
                     PrintTool.PrintLogD(getClass().getSimpleName(), String.format("获取YRToken成功:%s", new Gson().toJson(tokenRes)));
                     SpTool.SaveInfo(SpTool.YRToken, tokenRes.getToken());
                     SpTool.SaveInfo(SpTool.YRTokenTime, DateTool.instance().GetToday(DateTool.y_M_d_Hms));
+                    EventBus.getDefault().post(new YRTokenUpdateEvent(tokenRes.getToken()));
                 }else {
                     PrintTool.PrintLogD(getClass().getSimpleName(), String.format("获取YRToken失败:%s", tokenRes.isSuccess()));
                 }
@@ -74,9 +81,14 @@ public class NetWorkConnOfYR {
     }
 
     //请求分时
-    public void RequestStockTimeChart(BaseActivity baseActivity, BaseFragment baseFragment){
-        StockTimeReq req = new StockTimeReq("600570", 0);
-        Observable<StockTimeRes> observable = mode.RequestStockTime(SpTool.GetInfo(SpTool.YRToken), ConnPath.GuPpMain, req);
+    public void RequestStockTimeChart(BaseActivity baseActivity, BaseFragment baseFragment, int date){
+        StockTimeReq req = new StockTimeReq("600570.SH", date);
+        PrintTool.PrintLogD(getClass().getSimpleName(), String.format("请求友睿分时数据:%s", new Gson().toJson(req)));
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("Content-Type", "application/json");
+        map.put(YRConnPath.Authorization, SpTool.GetInfo(SpTool.YRToken));
+        map.put(YRConnPath.Origin, YRConnPath.OriginValue);
+        Observable<StockTimeRes> observable = mode.RequestStockTime(map, req);
         observable = ConnTool.AddRetryReq(observable, getClass().getSimpleName());
         if (baseActivity!=null){
             observable = ConnTool.AddExtraReqOfAct(observable, baseActivity);
@@ -88,7 +100,7 @@ public class NetWorkConnOfYR {
             @Override
             public void accept(StockTimeRes stockTimeRes) throws Throwable {
                 if (stockTimeRes.isSuccess()){
-
+                    PrintTool.PrintLogD(getClass().getSimpleName(), new Gson().toJson(stockTimeRes.getData()));
                 }
             }
         }, new Consumer<Throwable>() {

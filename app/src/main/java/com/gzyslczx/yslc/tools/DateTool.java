@@ -38,9 +38,9 @@ public class DateTool {
         }
         double result = cha * 1.0 / (1000 * 60 * 60);
         if(result<=hour){
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
 }

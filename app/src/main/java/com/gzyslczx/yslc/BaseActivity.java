@@ -20,7 +20,6 @@ public abstract class BaseActivity<T extends ViewBinding> extends RxAppCompatAct
         PrintTool.PrintLogD(getClass().getSimpleName(), "onCreate");
         InitParentLayout();
         InitView();
-//        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -51,7 +50,6 @@ public abstract class BaseActivity<T extends ViewBinding> extends RxAppCompatAct
     protected void onDestroy() {
         super.onDestroy();
         PrintTool.PrintLogD(getClass().getSimpleName(), "onDestroy");
-//        EventBus.getDefault().unregister(this);
     }
 
     //初始化父布局
