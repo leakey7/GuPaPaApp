@@ -7,9 +7,8 @@ import java.util.List;
 
 public abstract class StockMarketChartAdapter<T> {
 
-    private List<T> DataList;
+    public List<T> DataList;
     private BaseChart baseChart;
-    private StockTimeChartMode timeChartMode;
     private float MaxValue, MinValue;
 
     public BaseChart getBaseChart() {
@@ -31,35 +30,7 @@ public abstract class StockMarketChartAdapter<T> {
     /*
     * 重置数据源
     * */
-    public void setDataList(List<T> dataList) {
-        if (DataList==null){
-            DataList = new ArrayList<T>();
-        }else {
-            DataList.clear();
-        }
-        if (DataList.addAll(dataList)){
-            CountMaxMinPriceOfTimeChart();
-            if (baseChart!=null){
-                baseChart.invalidate();
-            }
-        }
-    }
-
-    /*
-    * 添加数据源
-    * */
-    public void addDataList(List<T> dataList){
-        if (DataList==null){
-            setDataList(dataList);
-        }else {
-            if (DataList.addAll(dataList)){
-                CountMaxMinPriceOfTimeChart();
-                if (baseChart!=null){
-                    baseChart.invalidate();
-                }
-            }
-        }
-    }
+    public abstract void setDataList(List<T> dataList);
 
     /*
     * 获取数据量
@@ -71,43 +42,24 @@ public abstract class StockMarketChartAdapter<T> {
         return 0;
     }
 
-
-    public StockTimeChartMode getTimeChartMode() {
-        return timeChartMode;
-    }
-
-    public void setTimeChartMode(StockTimeChartMode timeChartMode) {
-        this.timeChartMode = timeChartMode;
-    }
-
-    /*
-    * 计算分时图的最高和最低显示价
-    * */
-    public void CountMaxMinPriceOfTimeChart(){
-        if (timeChartMode!=null){
-            float dif_max = Math.abs(timeChartMode.getMaxPrice()- timeChartMode.getPrePrice());
-            float dif_min = Math.abs(timeChartMode.getMinPrice()- timeChartMode.getPrePrice());
-            if (dif_max > dif_min){
-                MaxValue = timeChartMode.getMaxPrice();
-                MinValue = timeChartMode.getPrePrice()-dif_max;
-            }else if (dif_max < dif_min){
-                MaxValue = timeChartMode.getPrePrice()+dif_min;
-                MinValue = timeChartMode.getMinPrice();
-            }else {
-                MaxValue = timeChartMode.getMaxPrice();
-                MinValue = timeChartMode.getMinPrice();
-            }
-        }
-    }
-
-    //显示最大值
+    //获取最大值
     public float getMaxValue() {
         return MaxValue;
     }
 
-    //显示最小值
+    //获取最小值
     public float getMinValue() {
         return MinValue;
+    }
+
+    //设置最大值
+    public void setMaxValue(float maxValue) {
+        MaxValue = maxValue;
+    }
+
+    //设置最小值
+    public void setMinValue(float minValue) {
+        MinValue = minValue;
     }
 
     /*
@@ -115,6 +67,16 @@ public abstract class StockMarketChartAdapter<T> {
     * */
     public float CountGainPercent(float nowValue, float baseValue){
         return (nowValue-baseValue)/baseValue*100f;
+    }
+
+    /*
+    * 分时图Mode
+    * */
+    public StockTimeChartMode getTimeChartMode(){
+        if (this instanceof StockTimeChartMode){
+            return (StockTimeChartMode) this;
+        }
+        return null;
     }
 
 }

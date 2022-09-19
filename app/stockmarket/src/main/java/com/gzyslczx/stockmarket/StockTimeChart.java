@@ -10,14 +10,12 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
-import com.gzyslczx.stockmarket.adapter.StockMarketChartAdapter;
-
 import java.text.DecimalFormat;
 
 public class StockTimeChart extends BaseChart {
 
-    private int TimeColor, GridColor, DottedColor, IndicatorBgColor, AvePriceColor, RealPriceColor, PrePriceColor, UpColor, DownColor;
-    private Paint TimePaint, GridPaint, DottedPaint, IndicatorBgPaint, AvePricePaint, RealPricePaint, PrePricePaint, UpPaint, DownPaint;
+    private int TimeColor, GridColor, DottedColor, IndicatorColor, AvePriceColor, RealPriceColor, PrePriceColor, UpColor, DownColor;
+    private Paint TimePaint, GridPaint, DottedPaint, IndicatorPaint, AvePricePaint, RealPricePaint, PrePricePaint, UpPaint, DownPaint;
     private float TimeSize, UpTextSize, DownTextSize;
     private int ItemSize;
     private DecimalFormat format;
@@ -38,15 +36,15 @@ public class StockTimeChart extends BaseChart {
         TimeColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartTimeColor, ContextCompat.getColor(getContext(), R.color.TimeColor));
         GridColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartGridLineColor, ContextCompat.getColor(getContext(), R.color.GridColor));
         DottedColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDottedLineColor, ContextCompat.getColor(getContext(), R.color.DottedColor));
-        IndicatorBgColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDottedLineColor, ContextCompat.getColor(getContext(), R.color.IndicatorColor));
-        AvePriceColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDottedLineColor, ContextCompat.getColor(getContext(), R.color.AvePriceColor));
-        RealPriceColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDottedLineColor, ContextCompat.getColor(getContext(), R.color.RealPriceColor));
-        PrePriceColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDottedLineColor, ContextCompat.getColor(getContext(), R.color.PrePriceColor));
-        UpColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDottedLineColor, ContextCompat.getColor(getContext(), R.color.UpColor));
-        DownColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDottedLineColor, ContextCompat.getColor(getContext(), R.color.DownColor));
+        IndicatorColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartIndicatorColor, ContextCompat.getColor(getContext(), R.color.IndicatorColor));
+        AvePriceColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartAvePriceColor, ContextCompat.getColor(getContext(), R.color.AvePriceColor));
+        RealPriceColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartRealPriceColor, ContextCompat.getColor(getContext(), R.color.RealPriceColor));
+        PrePriceColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartPrePriceColor, ContextCompat.getColor(getContext(), R.color.PrePriceColor));
+        UpColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartUpColor, ContextCompat.getColor(getContext(), R.color.UpColor));
+        DownColor = typedArray.getColor(R.styleable.StockTimeChart_TimeChartDownColor, ContextCompat.getColor(getContext(), R.color.DownColor));
         TimeSize = sp2px(getContext(), (int) (typedArray.getDimension(R.styleable.StockTimeChart_TimeChartTimeSize, 10)));
-        UpTextSize = typedArray.getDimension(R.styleable.StockTimeChart_TimeChartUpTextSize, 10);
-        DownTextSize = typedArray.getDimension(R.styleable.StockTimeChart_TimeChartDownTextSize, 10);
+        UpTextSize = sp2px(getContext(), (int) typedArray.getDimension(R.styleable.StockTimeChart_TimeChartUpTextSize, 10));
+        DownTextSize = sp2px(getContext(), (int) typedArray.getDimension(R.styleable.StockTimeChart_TimeChartDownTextSize, 10));
         ItemSize = typedArray.getInt(R.styleable.StockTimeChart_TimeChartItemSize, 241);
         InitPaint();
         format = new DecimalFormat("#0.00");
@@ -65,9 +63,7 @@ public class StockTimeChart extends BaseChart {
         ItemSize = itemSize;
     }
 
-    public int getItemSize() {
-        return ItemSize;
-    }
+
 
     /*
      * 初始化画笔
@@ -93,20 +89,20 @@ public class StockTimeChart extends BaseChart {
         DottedPaint.setStyle(Paint.Style.FILL);
         DottedPaint.setStrokeWidth(dp2px(getContext(), 1));
         DottedPaint.setPathEffect(new DashPathEffect(new float[]{5, 5}, 0));
-        //指示背景画笔
-        IndicatorBgPaint = new Paint();
-        IndicatorBgPaint.setColor(IndicatorBgColor);
-        IndicatorBgPaint.setStrokeWidth(1);
-        IndicatorBgPaint.setStyle(Paint.Style.FILL);
+        //指示画笔
+        IndicatorPaint = new Paint();
+        IndicatorPaint.setColor(IndicatorColor);
+        IndicatorPaint.setStrokeWidth(1);
+        IndicatorPaint.setStyle(Paint.Style.FILL);
         //均价画笔
         AvePricePaint = new Paint();
         AvePricePaint.setColor(AvePriceColor);
-        AvePricePaint.setStrokeWidth(1);
+        AvePricePaint.setStrokeWidth(4);
         AvePricePaint.setStyle(Paint.Style.FILL);
         //实价画笔
         RealPricePaint = new Paint();
         RealPricePaint.setColor(RealPriceColor);
-        RealPricePaint.setStrokeWidth(1);
+        RealPricePaint.setStrokeWidth(4);
         RealPricePaint.setStyle(Paint.Style.FILL);
         //昨收价画笔
         PrePricePaint = new Paint();
@@ -142,15 +138,27 @@ public class StockTimeChart extends BaseChart {
         float WidthOfQuarter = WidthOfHalf / 2f; //分时图宽度四分一
         float ThreeInFourOfHeight = BeforeTimeOnAxis - BeforeTimeOfQuarter; //分时图四分三高度
         float ThreeInFourOfWidth = RightOnAxis - WidthOfQuarter; //分时图四分三宽度
-        float zeroGainOnYAxis = BeforeTimeOfHalf + TimePaint.measureText(ZeroGain.substring(0, 1)); //0涨幅Y点
+        float zeroGainOnYAxis = BeforeTimeOfHalf + TimePaint.measureText(ZeroGain.substring(0, 1))/2f; //0涨幅Y点
         DrawGrid(canvas, TopOnAxis, LeftOnAxis, BeforeTimeOnAxis, RightOnAxis,
                 WidthOfHalf, WidthOfQuarter, BeforeTimeOfHalf, BeforeTimeOfQuarter, ThreeInFourOfHeight, ThreeInFourOfWidth); //绘制网格
         DrawBtmTime(canvas, LeftOnAxis, RightOnAxis, BtmOnAxis, WidthOfHalf, WidthOfQuarter, ThreeInFourOfWidth, zeroGainOnYAxis); //绘制时间
-        if (getAdapter()!=null && getAdapter().getTimeChartMode()!=null){
+        if (getAdapter()!=null && getAdapter().getDataListSize()>0){
+            TimePaint.setTextAlign(Paint.Align.LEFT);
+            canvas.drawText(format.format(getAdapter().getTimeChartMode().getPrePrice()), LeftOnAxis, zeroGainOnYAxis, TimePaint); //绘制昨收价
             float AveWidth = getMeasuredWidth() / (float)ItemSize; //平均宽度
             float AveHeight = BeforeTimeOnAxis / (getAdapter().getMaxValue()-getAdapter().getMinValue()); //平均高度
-            DrawTimeChart(canvas, AveWidth, AveHeight); //绘制分时数据
+            try {
+                DrawTimeChart(canvas, AveWidth, AveHeight); //绘制分时数据
+                DrawMostValue(canvas, LeftOnAxis, TopOnAxis, RightOnAxis, BeforeTimeOnAxis); //绘制最值和最值幅度
+            }catch (NullPointerException nullPointerException){
+                PrintLog("TimeChartMode Is Null");
+            }
         }
+    }
+
+    @Override
+    public int getItemSize() {
+        return ItemSize;
     }
 
     /*
@@ -189,7 +197,7 @@ public class StockTimeChart extends BaseChart {
     /*
     * 分时图
     * */
-    private void DrawTimeChart(Canvas canvas, float aveWidth, float aveHeight){
+    private void DrawTimeChart(Canvas canvas, float aveWidth, float aveHeight) throws NullPointerException{
         PrintLog("绘制分时数据");
         for (int i=0; i<getAdapter().getDataListSize(); i++){
             float X = aveWidth*i; //X点
@@ -207,6 +215,24 @@ public class StockTimeChart extends BaseChart {
                 canvas.drawLine(LastX, LastYOfReal, X, YOfReal, RealPricePaint); //实价线
             }
         }
+    }
+    /*
+    * 绘制最值和最值幅度
+    * */
+    private void DrawMostValue(Canvas canvas, float left, float top, float right, float btm) throws NullPointerException{
+        float MaxValueOnYAxis = top+UpTextSize;
+        UpPaint.setTextAlign(Paint.Align.LEFT);
+        canvas.drawText(format.format(getAdapter().getMaxValue()), left, MaxValueOnYAxis, UpPaint); //最大值价格
+        float TopGain = getAdapter().CountGainPercent(getAdapter().getMaxValue(), getAdapter().getTimeChartMode().getPrePrice()); //最大值幅度
+        UpPaint.setTextAlign(Paint.Align.RIGHT);
+        canvas.drawText(String.format("%s%%", format.format(TopGain)), right, MaxValueOnYAxis, UpPaint); //最大值幅度
+
+        float MinValueOnYAxis = btm-sp2px(getContext(), 1);
+        DownPaint.setTextAlign(Paint.Align.LEFT);
+        canvas.drawText(format.format(getAdapter().getMinValue()), left, MinValueOnYAxis, DownPaint); //最小值价格
+        float BtmGain = -TopGain;
+        DownPaint.setTextAlign(Paint.Align.RIGHT);
+        canvas.drawText(String.format("%s%%", format.format(BtmGain)), right, MinValueOnYAxis, DownPaint); //最小值幅度
     }
 
 

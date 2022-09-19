@@ -6,7 +6,7 @@
         <attr name="TimeChartTimeSize" format="dimension" />
         <attr name="TimeChartGridLineColor" format="color" />
         <attr name="TimeChartDottedLineColor" format="color" />
-        <attr name="TimeChartIndicatorBgColor" format="color" />
+        <attr name="TimeChartIndicatorColor" format="color" />
         <attr name="TimeChartPrePriceColor" format="color" />
         <attr name="TimeChartAvePriceColor" format="color" />
         <attr name="TimeChartRealPriceColor" format="color" />
@@ -15,7 +15,15 @@
         <attr name="TimeChartItemSize" format="integer" />
         <attr name="TimeChartUpTextSize" format="dimension" />
         <attr name="TimeChartDownTextSize" format="dimension" />
-        
     </declare-styleable>
-    
+
+    <declare-styleable name="SubStockChart">
+        <attr name="SubType" format="integer" />
+        <attr name="SubEqualColor" format="color" />
+        <attr name="SubUpColor" format="color" />
+        <attr name="SubDownColor" format="color" />
+        <attr name="SubIndicatorColor" format="color" />
+        <attr name="SubGridColor" format="color" />
+    </declare-styleable>
+
 </resources>

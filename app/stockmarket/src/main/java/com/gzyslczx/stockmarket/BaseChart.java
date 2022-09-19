@@ -82,4 +82,6 @@ public abstract class BaseChart extends View {
         this.adapter.setBaseChart(this);
     }
 
+    public abstract int getItemSize();
+
 }

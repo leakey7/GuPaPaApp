@@ -12,12 +12,18 @@ import com.gzyslczx.yslc.fragment.BaseFragment;
 import com.gzyslczx.yslc.tools.DateTool;
 import com.gzyslczx.yslc.tools.PrintTool;
 import com.gzyslczx.yslc.tools.SpTool;
+import com.gzyslczx.yslc.tools.yourui.CodeTypeTool;
+import com.gzyslczx.yslc.tools.yourui.RequestApi;
+import com.yourui.sdk.message.YRMarket;
+import com.yourui.sdk.message.client.YRMarketConfig;
 import com.yourui.sdk.message.entity.RequestSrvSync;
+import com.yourui.sdk.message.use.Stock;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Consumer;
@@ -48,6 +54,12 @@ public class NetWorkConnOfYR {
             }
         }
         return conn;
+    }
+
+    //轮询
+    public Observable<Long> RequestInterval(long second){
+        Observable<Long> observable = Observable.interval(0, second, TimeUnit.SECONDS);
+        return observable;
     }
 
     //请求Token
@@ -81,34 +93,26 @@ public class NetWorkConnOfYR {
     }
 
     //请求分时
-    public void RequestStockTimeChart(BaseActivity baseActivity, BaseFragment baseFragment, int date){
-        StockTimeReq req = new StockTimeReq("600570.SH", date);
-        PrintTool.PrintLogD(getClass().getSimpleName(), String.format("请求友睿分时数据:%s", new Gson().toJson(req)));
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("Content-Type", "application/json");
-        map.put(YRConnPath.Authorization, SpTool.GetInfo(SpTool.YRToken));
-        map.put(YRConnPath.Origin, YRConnPath.OriginValue);
-        Observable<StockTimeRes> observable = mode.RequestStockTime(map, req);
-        observable = ConnTool.AddRetryReq(observable, getClass().getSimpleName());
-        if (baseActivity!=null){
-            observable = ConnTool.AddExtraReqOfAct(observable, baseActivity);
-        }else if (baseFragment!=null){
-            observable = ConnTool.AddExtraReqOfFrag(observable, baseFragment);
-        }
-        observable = ConnTool.AddTokenOverdue(observable, ConnTool.YR_TYPE);
-        observable.subscribe(new Consumer<StockTimeRes>() {
-            @Override
-            public void accept(StockTimeRes stockTimeRes) throws Throwable {
-                if (stockTimeRes.isSuccess()){
-                    PrintTool.PrintLogD(getClass().getSimpleName(), new Gson().toJson(stockTimeRes.getData()));
+    public void RequestStockTimeChart(long second, String stockCode, BaseActivity baseActivity, BaseFragment baseFragment, int date){
+        int codeType = CodeTypeTool.MatchingCodeType(stockCode);
+        if (codeType!=-1) {
+            Stock stock = new Stock(stockCode, codeType);
+            Observable observable = RequestInterval(second);
+            observable = ConnTool.AddTokenOverdue(observable,ConnTool.YR_TYPE);
+            if (baseActivity!=null){
+                observable = ConnTool.AddExtraReqOfAct(observable, baseActivity);
+            }else if (baseFragment!=null){
+                observable = ConnTool.AddExtraReqOfFrag(observable, baseFragment);
+            }
+            observable.subscribe(new Consumer() {
+                @Override
+                public void accept(Object o) throws Throwable {
+                    RequestApi.getInstance().loadTrend(stock, null);
                 }
-            }
-        }, new Consumer<Throwable>() {
-            @Override
-            public void accept(Throwable throwable) throws Throwable {
-                PrintTool.PrintLogD(getClass().getSimpleName(), String.format("网络异常:%s", throwable.getMessage()));
-            }
-        });
+            });
+        }else {
+            PrintTool.PrintLogD(getClass().getSimpleName(), "股票类型匹配失败");
+        }
     }
 
 

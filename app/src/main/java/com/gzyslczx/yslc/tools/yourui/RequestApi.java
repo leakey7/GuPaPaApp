@@ -6,6 +6,8 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.gzyslczx.yslc.events.yourui.YRTimeChartEvent;
 import com.gzyslczx.yslc.tools.PrintTool;
 import com.yourui.sdk.message.YRMarket;
 import com.yourui.sdk.message.api.BuildRequestParams;
@@ -74,6 +76,7 @@ import com.yourui.sdk.message.utils.CommUtil;
 import com.yourui.sdk.message.utils.DateUtil;
 import com.yourui.sdk.message.utils.NumberUtil;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -754,6 +757,8 @@ public class RequestApi implements IDataApi {
                             }
                         }
                         mTrendExtEntity.setTrendDataModelList(trendDataModelList);
+                        YRTimeChartEvent event = new YRTimeChartEvent(true, mTrendExtEntity);
+                        EventBus.getDefault().post(event);
 //                        Logger.d(mTrendExtEntity);
 //                        sendMessage(mTrendExtEntity, handler, trendExtData.getDataHead().getType());
                     }
