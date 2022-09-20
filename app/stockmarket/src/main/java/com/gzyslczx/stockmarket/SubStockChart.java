@@ -9,12 +9,11 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
-public class SubStockChart extends BaseChart{
+public class SubStockChart extends BaseSubChart{
 
     private int UpColor, DownColor, GridColor, IndicatorColor, EqualColor;
     private Paint UpPaint, DownPaint, GridPaint, IndicatorPaint, EqualPaint;
     private int SubType;
-    private BaseChart MainChart;
 
     public SubStockChart(Context context) {
         super(context);
@@ -28,7 +27,7 @@ public class SubStockChart extends BaseChart{
         GridColor = typedArray.getColor(R.styleable.SubStockChart_SubGridColor, ContextCompat.getColor(getContext(), R.color.GridColor));
         IndicatorColor = typedArray.getColor(R.styleable.SubStockChart_SubIndicatorColor, ContextCompat.getColor(getContext(), R.color.IndicatorColor));
         EqualColor = typedArray.getColor(R.styleable.SubStockChart_SubEqualColor, ContextCompat.getColor(getContext(), R.color.PrePriceColor));
-        SubType = typedArray.getInt(R.styleable.SubStockChart_SubType, SubStockType.Volume_Type);
+        SubType = typedArray.getInt(R.styleable.SubStockChart_SubType, SubStockType.TimeVolume_Type);
         InitPaint();
         typedArray.recycle();
     }
@@ -54,7 +53,7 @@ public class SubStockChart extends BaseChart{
         DownPaint = new Paint();
         DownPaint.setColor(DownColor);
         DownPaint.setStrokeWidth(1);
-        DownPaint.setStyle(Paint.Style.FILL);
+        DownPaint.setStyle(Paint.Style.STROKE);
         //宫格画笔
         GridPaint = new Paint();
         GridPaint.setColor(GridColor);
@@ -81,29 +80,32 @@ public class SubStockChart extends BaseChart{
         float BtmOnAxis = TopOnAxis+getMeasuredHeight(); //底部坐标
         float HalfOfViewHeight = getMeasuredHeight() / 2f; //分时图高度二分一
         float HalfOfViewWidth = getMeasuredWidth() / 2f; //分时图宽度二分一
-        float ItemInterval = dp2px(getContext(), 2);
+        float ItemInterval = dp2px(getContext(), 1);
         DrawGridView(canvas, LeftOnAxis, TopOnAxis, RightOnAxis, BtmOnAxis, HalfOfViewHeight, HalfOfViewWidth); //绘制网格
-        if (getMainChart()!=null && SubType==SubStockType.Volume_Type){
-            float AveWidthOfItem = getMeasuredWidth() / (float) getItemSize();
-            float AveHeightOfItem = getMeasuredHeight() / getAdapter().getTimeChartMode().getMaxVolume();
-
+        if (SubType==SubStockType.TimeVolume_Type){
+            if (getMainChart()!=null && getTimeChartMode()!=null && getMainChart().getDataSize()!=0){
+                PrintLog("更新分时成交量附图");
+                float AveWidthOfItem = getMeasuredWidth() / (float) getItemSize(); //每项平均占宽
+                float AveHeightOfItem = getMeasuredHeight() / (float) getTimeChartMode().getMaxVolume(); //每单位高度
+                DrawSubOfTimeVolume(canvas, LeftOnAxis, TopOnAxis, BtmOnAxis, AveWidthOfItem, AveHeightOfItem, ItemInterval);
+            }
         }
+
     }
 
     @Override
     public int getItemSize() {
-        if (MainChart!=null){
-            return MainChart.getItemSize();
+        if (getMainChart()!=null){
+            return getMainChart().getItemSize();
         }
         return 1;
     }
 
-    public void setMainChart(BaseChart mainChart) {
-        MainChart = mainChart;
-    }
-
-    public BaseChart getMainChart() {
-        return MainChart;
+    @Override
+    public void setItemSize(int itemSize) {
+        if (getMainChart()!=null){
+            getMainChart().setItemSize(itemSize);
+        }
     }
 
     /*
@@ -120,8 +122,43 @@ public class SubStockChart extends BaseChart{
     /*
     * 绘制成交量副图
     * */
-    private void DrawSubOfVolume(Canvas canvas, float aveWidthOfItem, float aveHeightOfItem){
-
+    private void DrawSubOfTimeVolume(Canvas canvas, float left, float top, float btm,
+                                     float aveWidthOfItem, float aveHeightOfItem, float interval){
+        for (int i=0; i<getMainChart().getDataSize(); i++){
+            float itemLeft = left+aveWidthOfItem*i;
+            float itemRight = left+aveWidthOfItem*(i+1);
+            float itemTop = aveHeightOfItem * (float) getTimeChartMode().getStockTimeVolume(i);
+            if (i==0){
+                float PrePrice = getTimeChartMode().getPrePrice();
+                if (PrePrice>getTimeChartMode().getStockTimeRealPrice(i)){
+                    //成交价小于昨收价
+                    canvas.drawRect(itemLeft, itemTop, itemRight, btm, DownPaint);
+                }else if (PrePrice<getTimeChartMode().getStockTimeRealPrice(i)){
+                    //成交价大于昨收价
+                    canvas.drawRect(itemLeft, itemTop, itemRight, btm, UpPaint);
+                }else {
+                    //成交价等于昨收价
+                    canvas.drawRect(itemLeft, itemTop, itemRight, btm, EqualPaint);
+                }
+            }else {
+                if (getTimeChartMode().getStockTimeRealPrice(i-1)>getTimeChartMode().getStockTimeRealPrice(i)){
+                    //成交价降
+                    canvas.drawRect(itemLeft, itemTop, itemRight, btm, DownPaint);
+                }else if (getTimeChartMode().getStockTimeRealPrice(i-1)<getTimeChartMode().getStockTimeRealPrice(i)){
+                    //成交价升
+                    canvas.drawRect(itemLeft, itemTop, itemRight, btm, UpPaint);
+                }else {
+                    //成交价等于昨收价
+                    canvas.drawRect(itemLeft, itemTop, itemRight, btm, EqualPaint);
+                }
+            }
+        }
     }
 
+    @Override
+    public void NoticeSubUpdate() {
+        //主图通知副图更新
+        PrintLog("主图通知副图更新");
+        invalidate();
+    }
 }

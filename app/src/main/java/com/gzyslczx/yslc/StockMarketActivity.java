@@ -32,6 +32,8 @@ public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding
     void InitView() {
         timeChartAdapter = new TimeChartAdapter();
         mViewBinding.StockTimeChart.setAdapter(timeChartAdapter);
+        mViewBinding.SubStockChart.setMainChart(mViewBinding.StockTimeChart);
+        mViewBinding.SubStockChart.setTimeChartMode(timeChartAdapter);
         YRPresenter.instance().ForYRToken(this, null);
     }
 
@@ -43,11 +45,9 @@ public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void OnUpdateTimeChartEvent(YRTimeChartEvent event){
-        if (event.isSuccess() && event.getEntity().getTrendDataModelList().size()>timeChartAdapter.getDataListSize()){
-            timeChartAdapter.setPrePrice(event.getEntity().getPreClosePrice());
-            timeChartAdapter.setMaxPrice(event.getEntity().getMaxPrice());
-            timeChartAdapter.setMinPrice(event.getEntity().getMinPrice());
-            timeChartAdapter.setDataList(event.getEntity().getTrendDataModelList());
+        if (event.isSuccess() && event.getEntity().getTrendDataModelList().size()>timeChartAdapter.getDataSize()){
+            timeChartAdapter.setDataList(event.getEntity().getPreClosePrice(), event.getEntity().getMaxPrice(),
+                    event.getEntity().getMinPrice(), event.getEntity().getTrendDataModelList());
         }
     }
 

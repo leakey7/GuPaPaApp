@@ -20,10 +20,17 @@ public interface StockTimeChartMode {
 
     float getMinPrice(); //分时图实时最低价
 
-    void CountMaxMinPriceOfTimeChart(); //计算最高值和最低值
+    void CountMaxMinValueOfTimeChart(); //计算最高值和最低值
 
     void CountMaxVolumeOfTimeChart(); //计算最大值成交量
 
     long getMaxVolume(); //获取最大成交量
 
+    float getMaxGain(); //获取最大幅度
+
+    float getMinGain(); //获取最小幅度
+
+    float getMaxValue(); //最大值
+
+    float getMinValue(); //最小值
 }

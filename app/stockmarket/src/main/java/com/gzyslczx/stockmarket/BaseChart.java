@@ -8,11 +8,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.gzyslczx.stockmarket.adapter.StockMarketChartAdapter;
-
 public abstract class BaseChart extends View {
 
-    private StockMarketChartAdapter adapter;
 
     public BaseChart(Context context) {
         super(context);
@@ -39,9 +36,6 @@ public abstract class BaseChart extends View {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (this.adapter!=null){
-            this.adapter.releaseBaseChart();
-        }
     }
 
     public void PrintLog(String log){
@@ -73,15 +67,8 @@ public abstract class BaseChart extends View {
         return context.getResources().getDisplayMetrics().scaledDensity;
     }
 
-    public StockMarketChartAdapter getAdapter() {
-        return adapter;
-    }
-
-    public void setAdapter(StockMarketChartAdapter adapter) {
-        this.adapter = adapter;
-        this.adapter.setBaseChart(this);
-    }
-
     public abstract int getItemSize();
+
+    public abstract void setItemSize(int itemSize);
 
 }

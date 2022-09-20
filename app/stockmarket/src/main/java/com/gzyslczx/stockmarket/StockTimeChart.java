@@ -10,9 +10,11 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.gzyslczx.stockmarket.adapter.StockTimeChartAdapter;
+
 import java.text.DecimalFormat;
 
-public class StockTimeChart extends BaseChart {
+public class StockTimeChart extends BaseMainChart {
 
     private int TimeColor, GridColor, DottedColor, IndicatorColor, AvePriceColor, RealPriceColor, PrePriceColor, UpColor, DownColor;
     private Paint TimePaint, GridPaint, DottedPaint, IndicatorPaint, AvePricePaint, RealPricePaint, PrePricePaint, UpPaint, DownPaint;
@@ -25,6 +27,13 @@ public class StockTimeChart extends BaseChart {
     private final String PM_1400 = "14:00";
     private final String PM_1500 = "15:00";
     private final String ZeroGain = "0.00%";
+    private StockTimeChartAdapter adapter;
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        adapter.RemoveChart();
+    }
 
     public StockTimeChart(Context context) {
         super(context);
@@ -59,10 +68,13 @@ public class StockTimeChart extends BaseChart {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public void setItemSize(int itemSize) {
-        ItemSize = itemSize;
+    @Override
+    public int getDataSize() {
+        if (adapter!=null) {
+            return adapter.getDataSize();
+        }
+        return 0;
     }
-
 
 
     /*
@@ -112,13 +124,13 @@ public class StockTimeChart extends BaseChart {
         //上涨画笔
         UpPaint = new Paint();
         UpPaint.setColor(UpColor);
-        UpPaint.setTextSize(sp2px(getContext(), (int) UpTextSize));
+        UpPaint.setTextSize(UpTextSize);
         UpPaint.setStrokeWidth(1);
         UpPaint.setStyle(Paint.Style.FILL);
         //下跌画笔
         DownPaint = new Paint();
         DownPaint.setColor(DownColor);
-        DownPaint.setTextSize(sp2px(getContext(), (int) DownTextSize));
+        DownPaint.setTextSize(DownTextSize);
         DownPaint.setStrokeWidth(1);
         DownPaint.setStyle(Paint.Style.FILL);
     }
@@ -142,11 +154,11 @@ public class StockTimeChart extends BaseChart {
         DrawGrid(canvas, TopOnAxis, LeftOnAxis, BeforeTimeOnAxis, RightOnAxis,
                 WidthOfHalf, WidthOfQuarter, BeforeTimeOfHalf, BeforeTimeOfQuarter, ThreeInFourOfHeight, ThreeInFourOfWidth); //绘制网格
         DrawBtmTime(canvas, LeftOnAxis, RightOnAxis, BtmOnAxis, WidthOfHalf, WidthOfQuarter, ThreeInFourOfWidth, zeroGainOnYAxis); //绘制时间
-        if (getAdapter()!=null && getAdapter().getDataListSize()>0){
+        if (adapter!=null && adapter.getDataSize()>0){
             TimePaint.setTextAlign(Paint.Align.LEFT);
-            canvas.drawText(format.format(getAdapter().getTimeChartMode().getPrePrice()), LeftOnAxis, zeroGainOnYAxis, TimePaint); //绘制昨收价
+            canvas.drawText(format.format(adapter.getPrePrice()), LeftOnAxis, zeroGainOnYAxis, TimePaint); //绘制昨收价
             float AveWidth = getMeasuredWidth() / (float)ItemSize; //平均宽度
-            float AveHeight = BeforeTimeOnAxis / (getAdapter().getMaxValue()-getAdapter().getMinValue()); //平均高度
+            float AveHeight = BeforeTimeOnAxis / (adapter.getMaxValue()-adapter.getMinValue()); //平均高度
             try {
                 DrawTimeChart(canvas, AveWidth, AveHeight); //绘制分时数据
                 DrawMostValue(canvas, LeftOnAxis, TopOnAxis, RightOnAxis, BeforeTimeOnAxis); //绘制最值和最值幅度
@@ -159,6 +171,11 @@ public class StockTimeChart extends BaseChart {
     @Override
     public int getItemSize() {
         return ItemSize;
+    }
+
+    @Override
+    public void setItemSize(int itemSize) {
+        ItemSize = itemSize;
     }
 
     /*
@@ -199,18 +216,18 @@ public class StockTimeChart extends BaseChart {
     * */
     private void DrawTimeChart(Canvas canvas, float aveWidth, float aveHeight) throws NullPointerException{
         PrintLog("绘制分时数据");
-        for (int i=0; i<getAdapter().getDataListSize(); i++){
+        for (int i=0; i<adapter.getDataSize(); i++){
             float X = aveWidth*i; //X点
-            float YOfAve = (getAdapter().getMaxValue()-getAdapter().getTimeChartMode().getStockTimeAvePrice(i))*aveHeight; //均价Y点
-            float YOfReal = (getAdapter().getMaxValue()-getAdapter().getTimeChartMode().getStockTimeRealPrice(i))*aveHeight; //实价Y点
+            float YOfAve = (adapter.getMaxValue()-adapter.getStockTimeAvePrice(i))*aveHeight; //均价Y点
+            float YOfReal = (adapter.getMaxValue()-adapter.getStockTimeRealPrice(i))*aveHeight; //实价Y点
             if (i==0){
                 //第一点为圆点
                 canvas.drawCircle(X, YOfAve, 1, AvePricePaint);
                 canvas.drawCircle(X, YOfReal, 1, RealPricePaint);
             }else {
                 float LastX = aveWidth*(i-1);
-                float LastYOfAve = (getAdapter().getMaxValue()-getAdapter().getTimeChartMode().getStockTimeAvePrice(i-1))*aveHeight; //上一个均价Y点
-                float LastYOfReal = (getAdapter().getMaxValue()-getAdapter().getTimeChartMode().getStockTimeRealPrice(i-1))*aveHeight; //上一个实价Y点
+                float LastYOfAve = (adapter.getMaxValue()-adapter.getStockTimeAvePrice(i-1))*aveHeight; //上一个均价Y点
+                float LastYOfReal = (adapter.getMaxValue()-adapter.getStockTimeRealPrice(i-1))*aveHeight; //上一个实价Y点
                 canvas.drawLine(LastX, LastYOfAve, X, YOfAve, AvePricePaint); //均价线
                 canvas.drawLine(LastX, LastYOfReal, X, YOfReal, RealPricePaint); //实价线
             }
@@ -222,20 +239,21 @@ public class StockTimeChart extends BaseChart {
     private void DrawMostValue(Canvas canvas, float left, float top, float right, float btm) throws NullPointerException{
         float MaxValueOnYAxis = top+UpTextSize;
         UpPaint.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText(format.format(getAdapter().getMaxValue()), left, MaxValueOnYAxis, UpPaint); //最大值价格
-        float TopGain = getAdapter().CountGainPercent(getAdapter().getMaxValue(), getAdapter().getTimeChartMode().getPrePrice()); //最大值幅度
+        canvas.drawText(format.format(adapter.getMaxValue()), left, MaxValueOnYAxis, UpPaint); //最大值价格
+        String TopGain = String.format("%s%%", format.format(adapter.getMaxGain())); //最大值幅度
         UpPaint.setTextAlign(Paint.Align.RIGHT);
-        canvas.drawText(String.format("%s%%", format.format(TopGain)), right, MaxValueOnYAxis, UpPaint); //最大值幅度
+        canvas.drawText(TopGain, right, MaxValueOnYAxis, UpPaint); //最大值幅度
 
         float MinValueOnYAxis = btm-sp2px(getContext(), 1);
         DownPaint.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText(format.format(getAdapter().getMinValue()), left, MinValueOnYAxis, DownPaint); //最小值价格
-        float BtmGain = -TopGain;
+        canvas.drawText(format.format(adapter.getMinValue()), left, MinValueOnYAxis, DownPaint); //最小值价格
+        String BtmGain = String.format("%s%%", format.format(adapter.getMinGain()));
         DownPaint.setTextAlign(Paint.Align.RIGHT);
-        canvas.drawText(String.format("%s%%", format.format(BtmGain)), right, MinValueOnYAxis, DownPaint); //最小值幅度
+        canvas.drawText(BtmGain, right, MinValueOnYAxis, DownPaint); //最小值幅度
     }
 
-
-
-
+    public void setAdapter(StockTimeChartAdapter adapter) {
+        this.adapter = adapter;
+        adapter.setChart(this);
+    }
 }

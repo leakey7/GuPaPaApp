@@ -1,16 +1,59 @@
 package com.gzyslczx.yslc.adapter.yourui;
 
-import com.gzyslczx.stockmarket.adapter.StockMarketChartAdapter;
-import com.gzyslczx.stockmarket.adapter.StockTimeChartMode;
+import com.gzyslczx.stockmarket.adapter.StockTimeChartAdapter;
+import com.gzyslczx.yslc.tools.PrintTool;
 import com.yourui.sdk.message.use.TrendDataModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TimeChartAdapter extends StockMarketChartAdapter<TrendDataModel> implements StockTimeChartMode {
+public class TimeChartAdapter extends StockTimeChartAdapter<TrendDataModel> {
 
-    private float PrePrice, MaxPrice, MinPrice;
+    private List<TrendDataModel> dataList;
+    private float PrePrice;
+    private float MaxPrice, MinPrice;
+    private float MaxValue, MinValue;
+    private float MaxGain, MinGain;
     private long MaxVolume;
+
+    @Override
+    public void setDataList(List<TrendDataModel> dataList) {
+        PrintTool.PrintLogD(getClass().getSimpleName(), "更新数据源");
+        if (this.dataList==null){
+            this.dataList = new ArrayList<TrendDataModel>();
+        }else {
+            this.dataList.clear();
+        }
+        if (this.dataList.addAll(dataList)){
+            CountMaxMinValueOfTimeChart();
+            CountMaxVolumeOfTimeChart();
+        }
+        getMainChart().invalidate();
+        if (getMainChart().getSubChartLink()!=null) {
+            getMainChart().getSubChartLink().NoticeSubUpdate();
+        }
+    }
+
+    @Override
+    public void setDataList(float PrePrice, float MaxPrice, float MinPrice, List<TrendDataModel> dataList) {
+        setPrePrice(PrePrice);
+        setMaxPrice(MaxPrice);
+        setMinPrice(MinPrice);
+        setDataList(dataList);
+    }
+
+    @Override
+    public List<TrendDataModel> getDataList() {
+        return dataList;
+    }
+
+    @Override
+    public int getDataSize() {
+        if (dataList!=null){
+            return dataList.size();
+        }
+        return 0;
+    }
 
     @Override
     public void setPrePrice(float price) {
@@ -24,17 +67,17 @@ public class TimeChartAdapter extends StockMarketChartAdapter<TrendDataModel> im
 
     @Override
     public float getStockTimeRealPrice(int i) {
-        return DataList.get(i).getPrice();
+        return dataList.get(i).getPrice();
     }
 
     @Override
     public float getStockTimeAvePrice(int i) {
-        return DataList.get(i).getAvgPrice();
+        return dataList.get(i).getAvgPrice();
     }
 
     @Override
     public long getStockTimeVolume(int i) {
-        return DataList.get(i).getTradeAmount();
+        return dataList.get(i).getTradeAmount();
     }
 
     @Override
@@ -58,28 +101,30 @@ public class TimeChartAdapter extends StockMarketChartAdapter<TrendDataModel> im
     }
 
     @Override
-    public void CountMaxMinPriceOfTimeChart() {
-        float dif_max = Math.abs(getMaxPrice() - getPrePrice());
-        float dif_min = Math.abs(getMinPrice() - getPrePrice());
-        if (dif_max > dif_min){
-            setMaxValue(getMaxPrice());
-            setMinValue(getPrePrice()-dif_max);
-        }else if (dif_max < dif_min){
-            setMaxValue(getPrePrice()+dif_min);
-            setMinValue(getMinPrice());
+    public void CountMaxMinValueOfTimeChart() {
+        float DisMax = Math.abs(MaxPrice-PrePrice);
+        float DisMin = Math.abs(MinPrice-PrePrice);
+        if (DisMax>DisMin){
+            MaxValue = MaxPrice;
+            MinValue = PrePrice-DisMax;
+        }else if (DisMax<DisMin){
+            MinValue = MinPrice;
+            MaxValue = PrePrice+DisMin;
         }else {
-            setMaxValue(getMaxPrice());
-            setMinValue(getMinPrice());
+            MaxValue = MaxPrice;
+            MinValue = MinPrice;
         }
+        MaxGain=CountGainPercent(MaxValue, PrePrice);
+        MinGain=-MaxGain;
     }
 
     @Override
     public void CountMaxVolumeOfTimeChart() {
-        for (int i=0; i<getDataListSize(); i++){
+        for (int i=0; i<dataList.size(); i++){
             if (i==0){
-                MaxVolume = getStockTimeVolume(i);
+                MaxVolume = dataList.get(i).getTradeAmount();
             }else {
-                MaxVolume = Math.max(MaxVolume, getStockTimeVolume(i));
+                MaxVolume = Math.max(MaxVolume, dataList.get(i).getTradeAmount());
             }
         }
     }
@@ -90,22 +135,22 @@ public class TimeChartAdapter extends StockMarketChartAdapter<TrendDataModel> im
     }
 
     @Override
-    public void setDataList(List<TrendDataModel> dataList) {
-        /*
-         * 重置数据源
-         * */
-        if (getDataList()==null){
-            DataList = new ArrayList<TrendDataModel>();
-        }else {
-            DataList.clear();
-        }
-        if (DataList.addAll(dataList)){
-            CountMaxMinPriceOfTimeChart();
-            CountMaxVolumeOfTimeChart();
-            if (getBaseChart()!=null){
-                getBaseChart().invalidate();
-            }
-        }
+    public float getMaxGain() {
+        return MaxGain;
     }
 
+    @Override
+    public float getMinGain() {
+        return MinGain;
+    }
+
+    @Override
+    public float getMaxValue() {
+        return MaxValue;
+    }
+
+    @Override
+    public float getMinValue() {
+        return MinValue;
+    }
 }
