@@ -31,6 +31,7 @@ public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding
     @Override
     void InitView() {
         timeChartAdapter = new TimeChartAdapter();
+        mViewBinding.StockTimeChart.setEnableLongPress(true); //允许长按滑动
         mViewBinding.StockTimeChart.setAdapter(timeChartAdapter);
         mViewBinding.SubStockChart.setMainChart(mViewBinding.StockTimeChart);
         mViewBinding.SubStockChart.setTimeChartMode(timeChartAdapter);
@@ -39,7 +40,6 @@ public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void OnUpdateToken(YRTokenUpdateEvent event){
-        PrintTool.PrintLogD(getClass().getSimpleName(), String.format("有效Token:%s", event.getToken()));
         YRPresenter.instance().ForYRTimeChart(this, null, 0);
     }
 

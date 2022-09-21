@@ -12,14 +12,16 @@
         android:id="@+id/StockTimeChart"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"/>
 
     <com.gzyslczx.stockmarket.SubStockChart
         android:layout_width="0dp"
         android:layout_height="100dp"
         android:id="@+id/SubStockChart"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/StockTimeChart"
+        app:layout_constraintRight_toRightOf="@id/StockTimeChart"
         app:layout_constraintTop_toBottomOf="@id/StockTimeChart" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

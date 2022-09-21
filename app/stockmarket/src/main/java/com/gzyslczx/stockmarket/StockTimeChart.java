@@ -185,15 +185,16 @@ public class StockTimeChart extends BaseMainChart {
                           float widthHalf, float widthQuarter, float heightHalf, float heightQuarter,
                           float threeInFourOfHeight, float threeInFourOfWidth){
         PrintLog("绘制网格");
-        GridPaint.setStyle(Paint.Style.STROKE);
-        canvas.drawRect(left, top, right, btm, GridPaint); //绘制边框
         GridPaint.setStyle(Paint.Style.FILL);
-        canvas.drawLine(left, heightQuarter, right, heightQuarter, GridPaint); //一横线
+        canvas.drawLine(left, top, right, top, GridPaint); //一横线
+        canvas.drawLine(left, heightQuarter, right, heightQuarter, GridPaint); //二横线
         canvas.drawLine(left, heightHalf, right, heightHalf, DottedPaint); //中横线
-        canvas.drawLine(left, threeInFourOfHeight, right, threeInFourOfHeight, GridPaint); //三横线
-        canvas.drawLine(widthQuarter, top, widthQuarter, btm, GridPaint); //一竖线
+        canvas.drawLine(left, threeInFourOfHeight, right, threeInFourOfHeight, GridPaint); //四横线
+
+        canvas.drawLine(left, top, left, btm, GridPaint); //二竖线
+        canvas.drawLine(widthQuarter, top, widthQuarter, btm, GridPaint); //二竖线
         canvas.drawLine(widthHalf, top, widthHalf, btm, GridPaint); //中竖线
-        canvas.drawLine(threeInFourOfWidth, top, threeInFourOfWidth, btm, GridPaint); //三竖线
+        canvas.drawLine(threeInFourOfWidth, top, threeInFourOfWidth, btm, GridPaint); //四竖线
     }
     /*
     * 底部时间

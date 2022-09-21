@@ -8,6 +8,6 @@
     <color name="AvePriceColor">#FFC773</color>
     <color name="RealPriceColor">#392F41</color>
     <color name="PrePriceColor">#A1AFC9</color>
-    <color name="UpColor">#C83C23</color>
-    <color name="DownColor">#0C8918</color>
+    <color name="UpColor">#FF3300</color>
+    <color name="DownColor">#00E500</color>
 </resources>

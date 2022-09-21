@@ -53,7 +53,7 @@ public class SubStockChart extends BaseSubChart{
         DownPaint = new Paint();
         DownPaint.setColor(DownColor);
         DownPaint.setStrokeWidth(1);
-        DownPaint.setStyle(Paint.Style.STROKE);
+        DownPaint.setStyle(Paint.Style.FILL);
         //宫格画笔
         GridPaint = new Paint();
         GridPaint.setColor(GridColor);
@@ -80,14 +80,14 @@ public class SubStockChart extends BaseSubChart{
         float BtmOnAxis = TopOnAxis+getMeasuredHeight(); //底部坐标
         float HalfOfViewHeight = getMeasuredHeight() / 2f; //分时图高度二分一
         float HalfOfViewWidth = getMeasuredWidth() / 2f; //分时图宽度二分一
-        float ItemInterval = dp2px(getContext(), 1);
         DrawGridView(canvas, LeftOnAxis, TopOnAxis, RightOnAxis, BtmOnAxis, HalfOfViewHeight, HalfOfViewWidth); //绘制网格
         if (SubType==SubStockType.TimeVolume_Type){
             if (getMainChart()!=null && getTimeChartMode()!=null && getMainChart().getDataSize()!=0){
                 PrintLog("更新分时成交量附图");
                 float AveWidthOfItem = getMeasuredWidth() / (float) getItemSize(); //每项平均占宽
                 float AveHeightOfItem = getMeasuredHeight() / (float) getTimeChartMode().getMaxVolume(); //每单位高度
-                DrawSubOfTimeVolume(canvas, LeftOnAxis, TopOnAxis, BtmOnAxis, AveWidthOfItem, AveHeightOfItem, ItemInterval);
+                float ItemInterval = AveWidthOfItem*0.2f; //间隔
+                DrawSubOfTimeVolume(canvas, LeftOnAxis, BtmOnAxis, AveWidthOfItem, AveHeightOfItem, ItemInterval);
             }
         }
 
@@ -122,12 +122,13 @@ public class SubStockChart extends BaseSubChart{
     /*
     * 绘制成交量副图
     * */
-    private void DrawSubOfTimeVolume(Canvas canvas, float left, float top, float btm,
+    private void DrawSubOfTimeVolume(Canvas canvas, float left, float btm,
                                      float aveWidthOfItem, float aveHeightOfItem, float interval){
         for (int i=0; i<getMainChart().getDataSize(); i++){
-            float itemLeft = left+aveWidthOfItem*i;
-            float itemRight = left+aveWidthOfItem*(i+1);
-            float itemTop = aveHeightOfItem * (float) getTimeChartMode().getStockTimeVolume(i);
+            float itemLeft = left+aveWidthOfItem*i+interval;
+            float itemRight = left+aveWidthOfItem*(i+1)-interval;
+            PrintLog(String.format("成交量%s", getTimeChartMode().getStockTimeVolume(i)));
+            float itemTop = btm-aveHeightOfItem * (float) getTimeChartMode().getStockTimeVolume(i);
             if (i==0){
                 float PrePrice = getTimeChartMode().getPrePrice();
                 if (PrePrice>getTimeChartMode().getStockTimeRealPrice(i)){
