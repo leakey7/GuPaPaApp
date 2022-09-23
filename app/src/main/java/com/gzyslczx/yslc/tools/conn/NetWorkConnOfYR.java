@@ -21,12 +21,16 @@ import com.yourui.sdk.message.use.Stock;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
 import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -93,7 +97,7 @@ public class NetWorkConnOfYR {
     }
 
     //请求分时
-    public void RequestStockTimeChart(long second, String stockCode, BaseActivity baseActivity, BaseFragment baseFragment, int date){
+    public void RequestStockTimeChart(long second, String stockCode, BaseActivity baseActivity, BaseFragment baseFragment){
         int codeType = CodeTypeTool.MatchingCodeType(stockCode);
         if (codeType!=-1) {
             Stock stock = new Stock(stockCode, codeType);
@@ -108,6 +112,31 @@ public class NetWorkConnOfYR {
                 @Override
                 public void accept(Object o) throws Throwable {
                     RequestApi.getInstance().loadTrend(stock, null);
+                }
+            });
+        }else {
+            PrintTool.PrintLogD(getClass().getSimpleName(), "股票类型匹配失败");
+        }
+    }
+
+    /*
+    * 请求五日分时
+    * */
+    public void RequestFiveDayTimeChart(String stockCode, BaseActivity baseActivity, BaseFragment baseFragment, int reqTime){
+        int codeType = CodeTypeTool.MatchingCodeType(stockCode);
+        if (codeType!=-1){
+            Stock stock = new Stock(stockCode, codeType);
+            Observable observable = Observable.just(1);
+            observable = ConnTool.AddTokenOverdue(observable,ConnTool.YR_TYPE);
+            if (baseActivity!=null){
+                observable = ConnTool.AddExtraReqOfAct(observable, baseActivity);
+            }else if (baseFragment!=null){
+                observable = ConnTool.AddExtraReqOfFrag(observable, baseFragment);
+            }
+            observable.subscribe(new Consumer() {
+                @Override
+                public void accept(Object o) throws Throwable {
+                    RequestApi.getInstance().loadHistoryTrend(stock, reqTime, null);
                 }
             });
         }else {

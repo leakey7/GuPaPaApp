@@ -54,8 +54,14 @@ public class YRPresenter extends BasePresenter{
     }
 
     //请求分时数据
-    public void ForYRTimeChart(BaseActivity baseActivity, BaseFragment baseFragment, int date){
-        NetWorkConnOfYR.Create().RequestStockTimeChart(3, "600570", baseActivity, baseFragment, date);
+    public void ForYRTimeChart(BaseActivity baseActivity, BaseFragment baseFragment){
+        NetWorkConnOfYR.Create().RequestStockTimeChart(3, "600570", baseActivity, baseFragment);
     }
+
+    //请求历史分时数据
+    public void ForHistoryTimeChart(BaseActivity baseActivity, BaseFragment baseFragment, int reqTime){
+        NetWorkConnOfYR.Create().RequestFiveDayTimeChart("600570", baseActivity, baseFragment, reqTime);
+    }
+
 
 }

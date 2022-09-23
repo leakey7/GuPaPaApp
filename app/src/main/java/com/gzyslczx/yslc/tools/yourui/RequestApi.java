@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.gzyslczx.yslc.events.yourui.YRFiveDayTimeEvent;
 import com.gzyslczx.yslc.events.yourui.YRTimeChartEvent;
 import com.gzyslczx.yslc.tools.PrintTool;
 import com.yourui.sdk.message.YRMarket;
@@ -901,9 +902,13 @@ public class RequestApi implements IDataApi {
                             }
                         }
                         mTrendExtEntity.setTrendDataModelList(trendDataModelList);
-                        sendMessage(mTrendExtEntity, handler, mAnsLeadData.getDataHead().getType());
+                        YRFiveDayTimeEvent event = new YRFiveDayTimeEvent(requestTime, mTrendExtEntity);
+                        EventBus.getDefault().post(event);
+//                        sendMessage(mTrendExtEntity, handler, mAnsLeadData.getDataHead().getType());
+                    }else {
+                        YRFiveDayTimeEvent event = new YRFiveDayTimeEvent(requestTime, null);
+                        EventBus.getDefault().post(event);
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

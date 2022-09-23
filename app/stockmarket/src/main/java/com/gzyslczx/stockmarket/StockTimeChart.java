@@ -14,7 +14,7 @@ import com.gzyslczx.stockmarket.adapter.StockTimeChartAdapter;
 
 import java.text.DecimalFormat;
 
-public class StockTimeChart extends BaseMainChart {
+public class StockTimeChart extends BaseMainChart implements OnGesturesListener{
 
     private int TimeColor, GridColor, DottedColor, IndicatorColor, AvePriceColor, RealPriceColor, PrePriceColor, UpColor, DownColor;
     private Paint TimePaint, GridPaint, DottedPaint, IndicatorPaint, AvePricePaint, RealPricePaint, PrePricePaint, UpPaint, DownPaint;
@@ -28,6 +28,7 @@ public class StockTimeChart extends BaseMainChart {
     private final String PM_1500 = "15:00";
     private final String ZeroGain = "0.00%";
     private StockTimeChartAdapter adapter;
+    private float LongPressX=0, LongPressY=0;
 
     @Override
     protected void onDetachedFromWindow() {
@@ -57,6 +58,7 @@ public class StockTimeChart extends BaseMainChart {
         ItemSize = typedArray.getInt(R.styleable.StockTimeChart_TimeChartItemSize, 241);
         InitPaint();
         format = new DecimalFormat("#0.00");
+        setGesturesListener(this);
         typedArray.recycle();
     }
 
@@ -104,7 +106,7 @@ public class StockTimeChart extends BaseMainChart {
         //指示画笔
         IndicatorPaint = new Paint();
         IndicatorPaint.setColor(IndicatorColor);
-        IndicatorPaint.setStrokeWidth(1);
+        IndicatorPaint.setStrokeWidth(2);
         IndicatorPaint.setStyle(Paint.Style.FILL);
         //均价画笔
         AvePricePaint = new Paint();
@@ -150,13 +152,13 @@ public class StockTimeChart extends BaseMainChart {
         float WidthOfQuarter = WidthOfHalf / 2f; //分时图宽度四分一
         float ThreeInFourOfHeight = BeforeTimeOnAxis - BeforeTimeOfQuarter; //分时图四分三高度
         float ThreeInFourOfWidth = RightOnAxis - WidthOfQuarter; //分时图四分三宽度
-        float zeroGainOnYAxis = BeforeTimeOfHalf + TimePaint.measureText(ZeroGain.substring(0, 1))/2f; //0涨幅Y点
+        float ZeroGainOnYAxis = BeforeTimeOfHalf + TimePaint.measureText(ZeroGain.substring(0, 1))/2f; //0涨幅Y点
         DrawGrid(canvas, TopOnAxis, LeftOnAxis, BeforeTimeOnAxis, RightOnAxis,
                 WidthOfHalf, WidthOfQuarter, BeforeTimeOfHalf, BeforeTimeOfQuarter, ThreeInFourOfHeight, ThreeInFourOfWidth); //绘制网格
-        DrawBtmTime(canvas, LeftOnAxis, RightOnAxis, BtmOnAxis, WidthOfHalf, WidthOfQuarter, ThreeInFourOfWidth, zeroGainOnYAxis); //绘制时间
+        DrawBtmTime(canvas, LeftOnAxis, RightOnAxis, BtmOnAxis, WidthOfHalf, WidthOfQuarter, ThreeInFourOfWidth, ZeroGainOnYAxis); //绘制时间
         if (adapter!=null && adapter.getDataSize()>0){
             TimePaint.setTextAlign(Paint.Align.LEFT);
-            canvas.drawText(format.format(adapter.getPrePrice()), LeftOnAxis, zeroGainOnYAxis, TimePaint); //绘制昨收价
+            canvas.drawText(format.format(adapter.getPrePrice()), LeftOnAxis, ZeroGainOnYAxis, TimePaint); //绘制昨收价
             float AveWidth = getMeasuredWidth() / (float)ItemSize; //平均宽度
             float AveHeight = BeforeTimeOnAxis / (adapter.getMaxValue()-adapter.getMinValue()); //平均高度
             try {
@@ -165,6 +167,20 @@ public class StockTimeChart extends BaseMainChart {
             }catch (NullPointerException nullPointerException){
                 PrintLog("TimeChartMode Is Null");
             }
+        }
+        if (isEnableLongPress() && isLongPress()){
+            if (LongPressX<LeftOnAxis){
+                LongPressX = LeftOnAxis;
+            }else if (LongPressX>RightOnAxis){
+                LongPressX = RightOnAxis;
+            }
+            if (LongPressY<TopOnAxis){
+                LongPressY = TopOnAxis;
+            }else if (LongPressY>BeforeTimeOnAxis){
+                LongPressY = BeforeTimeOnAxis;
+            }
+            canvas.drawLine(LongPressX, TopOnAxis, LongPressX, BeforeTimeOnAxis, IndicatorPaint); //指示竖线
+            canvas.drawLine(LeftOnAxis, LongPressY, RightOnAxis, LongPressY, IndicatorPaint); //指示横线
         }
     }
 
@@ -185,16 +201,19 @@ public class StockTimeChart extends BaseMainChart {
                           float widthHalf, float widthQuarter, float heightHalf, float heightQuarter,
                           float threeInFourOfHeight, float threeInFourOfWidth){
         PrintLog("绘制网格");
+        GridPaint.setStyle(Paint.Style.STROKE);
+        canvas.drawRect(left, top, right, btm, GridPaint);
         GridPaint.setStyle(Paint.Style.FILL);
         canvas.drawLine(left, top, right, top, GridPaint); //一横线
         canvas.drawLine(left, heightQuarter, right, heightQuarter, GridPaint); //二横线
         canvas.drawLine(left, heightHalf, right, heightHalf, DottedPaint); //中横线
         canvas.drawLine(left, threeInFourOfHeight, right, threeInFourOfHeight, GridPaint); //四横线
-
-        canvas.drawLine(left, top, left, btm, GridPaint); //二竖线
+        canvas.drawLine(left, btm, right, btm, GridPaint); //五横线
+        canvas.drawLine(left, top, left, btm, GridPaint); //一竖线
         canvas.drawLine(widthQuarter, top, widthQuarter, btm, GridPaint); //二竖线
         canvas.drawLine(widthHalf, top, widthHalf, btm, GridPaint); //中竖线
         canvas.drawLine(threeInFourOfWidth, top, threeInFourOfWidth, btm, GridPaint); //四竖线
+        canvas.drawLine(right, top, right, btm, GridPaint); //五竖线
     }
     /*
     * 底部时间
@@ -256,5 +275,46 @@ public class StockTimeChart extends BaseMainChart {
     public void setAdapter(StockTimeChartAdapter adapter) {
         this.adapter = adapter;
         adapter.setChart(this);
+    }
+
+    /*
+    * 长按滑动
+    * */
+    @Override
+    public void OnLongPressMove(float moveX, float moveY) {
+        LongPressX = moveX;
+        LongPressY = moveY;
+        invalidate();
+    }
+
+    /*
+    * 长按抬起
+    * */
+    @Override
+    public void OnLongPressAfterUp(float upX, float upY) {
+        LongPressX = upX;
+        LongPressY = upY;
+        invalidate();
+    }
+
+    @Override
+    public void CancelLongPressBySingleClick() {
+        invalidate();
+    }
+
+    /*
+    * 单指滑动
+    * */
+    @Override
+    public void OnSingleMove(float moveX, float moveY, float distanceX, float distanceY) {
+
+    }
+
+    /*
+    * 双指缩放
+    * */
+    @Override
+    public void OnZoom(float aX, float aY, float bX, float bY) {
+
     }
 }

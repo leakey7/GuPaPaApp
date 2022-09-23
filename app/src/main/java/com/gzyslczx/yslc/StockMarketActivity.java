@@ -1,7 +1,10 @@
 package com.gzyslczx.yslc;
 
+import com.google.gson.Gson;
+import com.gzyslczx.yslc.adapter.yourui.FiveDayTimeChartAdapter;
 import com.gzyslczx.yslc.adapter.yourui.TimeChartAdapter;
 import com.gzyslczx.yslc.databinding.ActivityStockMarketBinding;
+import com.gzyslczx.yslc.events.yourui.YRFiveDayTimeEvent;
 import com.gzyslczx.yslc.events.yourui.YRTimeChartEvent;
 import com.gzyslczx.yslc.events.yourui.YRTokenUpdateEvent;
 import com.gzyslczx.yslc.presenter.YRPresenter;
@@ -14,6 +17,7 @@ import org.greenrobot.eventbus.ThreadMode;
 public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding> {
 
     private TimeChartAdapter timeChartAdapter;
+    private FiveDayTimeChartAdapter fiveDayTimeChartAdapter;
 
     @Override
     void InitParentLayout() {
@@ -35,12 +39,15 @@ public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding
         mViewBinding.StockTimeChart.setAdapter(timeChartAdapter);
         mViewBinding.SubStockChart.setMainChart(mViewBinding.StockTimeChart);
         mViewBinding.SubStockChart.setTimeChartMode(timeChartAdapter);
+        fiveDayTimeChartAdapter = new FiveDayTimeChartAdapter();
+        mViewBinding.FiveDayTimeChart.setAdapter(fiveDayTimeChartAdapter);
         YRPresenter.instance().ForYRToken(this, null);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void OnUpdateToken(YRTokenUpdateEvent event){
-        YRPresenter.instance().ForYRTimeChart(this, null, 0);
+        YRPresenter.instance().ForYRTimeChart(this, null);
+        YRPresenter.instance().ForHistoryTimeChart(this, null, -4);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -51,6 +58,21 @@ public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding
         }
     }
 
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void OnUpdateFiveDayTimeChartEvent(YRFiveDayTimeEvent event){
+        if (event.getHisTrendExtEntity()!=null){
+            PrintTool.PrintLogD(getClass().getSimpleName(), String.format("得到历史分时数据%d", event.getReqTime()));
+            fiveDayTimeChartAdapter.addDataList(event.getHisTrendExtEntity().getPreClosePrice(), event.getHisTrendExtEntity().getMaxPrice(),
+                    event.getHisTrendExtEntity().getMinPrice(), event.getHisTrendExtEntity().getTrendDataModelList());
+            if (event.getReqTime()!=0){
+                int time = event.getReqTime()+1;
+                YRPresenter.instance().ForHistoryTimeChart(this, null, time);
+            }
+        }else {
+            PrintTool.PrintLogD(getClass().getSimpleName(), String.format("历史日期%d，无分时数据", event.getReqTime()));
+        }
+    }
 
 
 }

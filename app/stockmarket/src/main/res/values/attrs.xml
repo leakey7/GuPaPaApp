@@ -26,4 +26,20 @@
         <attr name="SubGridColor" format="color" />
     </declare-styleable>
 
+    <declare-styleable name="FiveDayTimeChart">
+        <attr name="FiveChartTimeColor" format="color" />
+        <attr name="FiveChartTimeSize" format="dimension" />
+        <attr name="FiveChartGridLineColor" format="color" />
+        <attr name="FiveChartDottedLineColor" format="color" />
+        <attr name="FiveChartIndicatorColor" format="color" />
+        <attr name="FiveChartPrePriceColor" format="color" />
+        <attr name="FiveChartAvePriceColor" format="color" />
+        <attr name="FiveChartRealPriceColor" format="color" />
+        <attr name="FiveChartUpColor" format="color" />
+        <attr name="FiveChartDownColor" format="color" />
+        <attr name="FiveChartItemSize" format="integer" />
+        <attr name="FiveChartUpTextSize" format="dimension" />
+        <attr name="FiveChartDownTextSize" format="dimension" />
+    </declare-styleable>
+
 </resources>
