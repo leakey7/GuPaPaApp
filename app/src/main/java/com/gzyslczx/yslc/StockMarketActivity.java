@@ -36,11 +36,12 @@ public class StockMarketActivity extends BaseActivity<ActivityStockMarketBinding
     void InitView() {
         timeChartAdapter = new TimeChartAdapter();
         mViewBinding.StockTimeChart.setEnableLongPress(true); //允许长按滑动
-        mViewBinding.StockTimeChart.setAdapter(timeChartAdapter);
-        mViewBinding.SubStockChart.setMainChart(mViewBinding.StockTimeChart);
-        mViewBinding.SubStockChart.setTimeChartMode(timeChartAdapter);
+        mViewBinding.StockTimeChart.setAdapter(timeChartAdapter); //分时图配置Adapter
+        mViewBinding.SubStockChart.setMainChart(mViewBinding.StockTimeChart); //分时副图关联分时主图
+        mViewBinding.SubStockChart.setTimeChartMode(timeChartAdapter); //分时副图数据源与分时主图合并
+
         fiveDayTimeChartAdapter = new FiveDayTimeChartAdapter();
-        mViewBinding.FiveDayTimeChart.setAdapter(fiveDayTimeChartAdapter);
+        mViewBinding.FiveDayTimeChart.setAdapter(fiveDayTimeChartAdapter); //五日分时配置Adapter
         YRPresenter.instance().ForYRToken(this, null);
     }
 

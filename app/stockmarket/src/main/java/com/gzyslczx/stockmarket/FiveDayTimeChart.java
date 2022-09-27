@@ -30,6 +30,8 @@ public class FiveDayTimeChart extends BaseMainChart implements OnGesturesListene
 
     public void setAdapter(StockTimeChartAdapter adapter) {
         this.adapter = adapter;
+        this.adapter.setChart(this);
+
     }
 
     public FiveDayTimeChart(Context context) {

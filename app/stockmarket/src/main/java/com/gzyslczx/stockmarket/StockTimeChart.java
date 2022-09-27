@@ -33,7 +33,9 @@ public class StockTimeChart extends BaseMainChart implements OnGesturesListener{
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        adapter.RemoveChart();
+        if (adapter!=null) {
+            adapter.RemoveChart();
+        }
     }
 
     public StockTimeChart(Context context) {
@@ -274,7 +276,7 @@ public class StockTimeChart extends BaseMainChart implements OnGesturesListener{
 
     public void setAdapter(StockTimeChartAdapter adapter) {
         this.adapter = adapter;
-        adapter.setChart(this);
+        this.adapter.setChart(this);
     }
 
     /*
